@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  user_id String @id @db.Char(36) @default(uuid())
+  username String @db.VarChar(20)
+  email String @db.VarChar(30)
+  email_confirm Boolean @default(false)
+  password String @db.VarChar(256)
+  agreement Boolean @default(false)
+  role String @db.VarChar(10)
+  created_at DateTime @db.Timestamp(3) @default(now())
+  updated_at DateTime @db.Timestamp(3) @updatedAt
+  post posts[]
+  leader clubs[]
+  wishlist wishlists[]
+  verifying verifying_email?
+}
+
+model verifying_email {
+  user_id String @id @db.Char(36)
+  token String @db.VarChar(255)
+  token_expires DateTime @db.Timestamp(3)
+  verified Boolean @default(false)
+  user users @relation(fields: [user_id], references: [user_id], onUpdate: Cascade, onDelete: Cascade)
+}
+
+model wishlists {
+  user_id String @db.Char(36)
+  club_id Int @db.UnsignedMediumInt
+  user users @relation(fields: [user_id], references: [user_id], onUpdate: Cascade, onDelete: Cascade)
+  club clubs @relation(fields: [club_id], references: [club_id], onUpdate: Cascade, onDelete: Cascade)
+  @@id([user_id, club_id])
+}
+
+model clubs {
+  club_id Int @id @db.UnsignedMediumInt @default(autoincrement())
+  club_name String @db.VarChar(20)
+  leader_name String? @db.VarChar(36)
+  one_line String @db.VarChar(100)
+  short String @db.VarChar(500)
+  is_recruiting Boolean @default(false)
+  page_url String? @db.VarChar(255)
+  view Int @db.UnsignedInt
+  created_at DateTime @db.Timestamp(3) @default(now())
+  updated_at DateTime @db.Timestamp(3) @updatedAt
+  user users? @relation(fields: [leader_name], references: [user_id], onUpdate: Cascade, onDelete: SetNull)
+  post posts[]
+  wishlist wishlists[]
+  recruiting recruiting_schedule?
+  classification club_classification?
+  tag club_tag[]
+}
+
+model recruiting_schedule {
+  club_id Int @id @db.UnsignedMediumInt
+  recruit_start DateTime @db.Date
+  recruit_end DateTime @db.Date
+  club clubs @relation(fields: [club_id], references: [club_id], onUpdate: Cascade, onDelete: Cascade)
+}
+
+
+model colleges {
+  college_id Int @id @db.UnsignedTinyInt @default(autoincrement())
+  college_name String @db.VarChar(40)
+  department departments[]
+  club club_classification[]
+}
+
+model departments { 
+  departement_id Int @id @db.UnsignedSmallInt @default(autoincrement())
+  college_id Int @db.UnsignedTinyInt
+  department_name String @db.VarChar(40)
+  college colleges @relation(fields: [college_id], references: [college_id], onUpdate: Cascade, onDelete: Restrict)
+  club club_classification[]
+}
+
+model club_classification {
+  club_id Int @id @db.UnsignedMediumInt
+  college_id Int @db.UnsignedTinyInt
+  department_id Int? @db.UnsignedSmallInt
+  club clubs @relation(fields: [club_id], references: [club_id], onUpdate: Cascade, onDelete: Cascade)
+  college colleges @relation(fields: [college_id], references: [college_id], onUpdate: Cascade, onDelete: Restrict)
+  department departments? @relation(fields: [department_id], references: [departement_id], onUpdate: Cascade, onDelete: Restrict)
+}
+
+model tags {
+  tag_id Int @id @db.UnsignedInt @default(autoincrement())
+  tag_name String @db.VarChar(20)
+  created_at DateTime @db.Timestamp(3) @default(now())
+  club club_tag[]
+}
+
+model club_tag {
+  club_id Int @db.UnsignedMediumInt
+  tag_id Int @db.UnsignedInt
+  created_at DateTime @db.Timestamp(3) @default(now())
+  club clubs @relation(fields: [club_id], references: [club_id], onUpdate: Cascade, onDelete: Cascade)
+  tag tags @relation(fields: [tag_id], references: [tag_id], onUpdate: Cascade, onDelete: Restrict)
+  @@id([club_id, tag_id])
+}
+
+model posts {
+  post_id Int @id @db.UnsignedInt @default(autoincrement())
+  user_id String? @db.Char(36)
+  club_id Int? @db.UnsignedMediumInt
+  title String @db.VarChar(100)
+  content String @db.Text
+  is_notice Boolean @default(false)
+  is_recruit Boolean @default(false)
+  report_count Int @db.UnsignedMediumInt
+  view Int @db.UnsignedInt
+  created_at DateTime @db.Timestamp(3) @default(now())
+  updated_at DateTime @db.Timestamp(3) @updatedAt
+  user users? @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: SetNull)
+  club clubs? @relation(fields: [club_id], references: [club_id], onDelete: Cascade, onUpdate: SetNull)
+  recruiting recruitings?
+}
+
+model recruitings {
+  post_id Int @id @db.UnsignedInt
+  recruit_start DateTime @db.Date
+  recruit_end DateTime @db.Date
+  recruit_url String @db.VarChar(1000)
+  recruit_target String @db.VarChar(1000)
+  post posts @relation(fields: [post_id], references: [post_id], onUpdate: Cascade, onDelete: Cascade)
+}
+
+model images {
+  image_id Int @id @db.UnsignedInt @default(autoincrement())
+  post_id Int? @db.UnsignedInt
+  club_id Int? @db.UnsignedMediumInt
+  filename String @db.VarChar(50)
+  created_at DateTime @db.Timestamp(3) @default(now()) 
+}
+
+
