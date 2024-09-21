@@ -1,0 +1,1 @@
+interface GetPostsId extends NoticePost {}
