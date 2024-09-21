@@ -1,1 +1,1 @@
-interface GetPostsId extends NoticePost {}
+interface GetPostsIdResponse extends NoticePost {}
