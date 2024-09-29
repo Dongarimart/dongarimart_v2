@@ -15,8 +15,8 @@ datasource db {
 
 model users {
   user_id String @id @db.Char(36) @default(uuid())
-  username String @db.VarChar(20)
-  email String @db.VarChar(30)
+  username String @db.VarChar(20) @unique
+  email String @db.VarChar(30) @unique
   email_confirm Boolean @default(false)
   password String @db.VarChar(256)
   agreement Boolean @default(false)
@@ -47,7 +47,7 @@ model wishlists {
 
 model clubs {
   club_id Int @id @db.UnsignedMediumInt @default(autoincrement())
-  club_name String @db.VarChar(20)
+  club_name String @db.VarChar(20) @unique
   leader_name String? @db.VarChar(36)
   one_line String @db.VarChar(100)
   short String @db.VarChar(500)
@@ -74,7 +74,7 @@ model recruiting_schedule {
 
 model colleges {
   college_id Int @id @db.UnsignedTinyInt @default(autoincrement())
-  college_name String @db.VarChar(40)
+  college_name String @db.VarChar(40) @unique
   department departments[]
   club club_classification[]
 }
@@ -82,7 +82,7 @@ model colleges {
 model departments { 
   departement_id Int @id @db.UnsignedSmallInt @default(autoincrement())
   college_id Int @db.UnsignedTinyInt
-  department_name String @db.VarChar(40)
+  department_name String @db.VarChar(40) @unique
   college colleges @relation(fields: [college_id], references: [college_id], onUpdate: Cascade, onDelete: Restrict)
   club club_classification[]
 }
@@ -98,7 +98,7 @@ model club_classification {
 
 model tags {
   tag_id Int @id @db.UnsignedInt @default(autoincrement())
-  tag_name String @db.VarChar(20)
+  tag_name String @db.VarChar(20) @unique
   created_at DateTime @db.Timestamp(3) @default(now())
   club club_tag[]
 }
